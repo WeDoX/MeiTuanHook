@@ -21,7 +21,7 @@ public class ScreenLocalStorage {
     public static double getPrice(){
         double price = BaseLocalStorageManager.getDouble(LocalStorageConstant.KEY_PRICE, 0.0f);
         if(price <= 0){
-            price = 1.0;
+            price = 0.0;
         }
         return price;
     }

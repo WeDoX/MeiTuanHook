@@ -85,31 +85,53 @@ class MyAccessibilityService : AccessibilityService() {
                 screenBitmap.width,
                 screenBitmap.height / 2
             )
-            val topResultModel = OCRAPI.runModel(topScreenBitmap)
-            Log.e("ATU", "上图识别结果:${topResultModel.toA()}")
-            if (topResultModel is OCRResultModel.Success && topResultModel.data.price >= ScreenLocalStorage.getPrice()) {
-                getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
-            } else {
-                Log.e("ATU", "上图忽略不点击，因为:${topResultModel.toA()}")
-                val bottomScreenBitmap = Bitmap.createBitmap(
-                    screenBitmap,
-                    0,
-                    screenBitmap.height / 2,
-                    screenBitmap.width,
-                    screenBitmap.height / 2
-                )
-                val bottomResultModel = OCRAPI.runModel(bottomScreenBitmap)
-                Log.e("ATU", "下图识别结果:${bottomResultModel.toA()}")
-                if (bottomResultModel is OCRResultModel.Success && bottomResultModel.data.price >= ScreenLocalStorage.getPrice()) {
-                    getResultRect(
-                        bottomScreenBitmap,
-                        buttonMat,
-                        screenBitmapHeight = screenBitmap.height / 2
-                    )
-                } else {
-                    Log.e("ATU", "下图忽略不点击，因为:${bottomResultModel.toA()}")
+
+            when{
+                ScreenLocalStorage.getPrice() > 0->{
+                    val topResultModel = OCRAPI.runModel(topScreenBitmap)
+                    Log.e("ATU", "上图识别结果:${topResultModel.toA()}")
+                    if (topResultModel is OCRResultModel.Success && topResultModel.data.price >= ScreenLocalStorage.getPrice()) {
+                        getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
+                    } else {
+                        Log.e("ATU", "上图忽略不点击，因为:${topResultModel.toA()}")
+                        val bottomScreenBitmap = Bitmap.createBitmap(
+                            screenBitmap,
+                            0,
+                            screenBitmap.height / 2,
+                            screenBitmap.width,
+                            screenBitmap.height / 2
+                        )
+                        val bottomResultModel = OCRAPI.runModel(bottomScreenBitmap)
+                        Log.e("ATU", "下图识别结果:${bottomResultModel.toA()}")
+                        if (bottomResultModel is OCRResultModel.Success && bottomResultModel.data.price >= ScreenLocalStorage.getPrice()) {
+                            getResultRect(
+                                bottomScreenBitmap,
+                                buttonMat,
+                                screenBitmapHeight = screenBitmap.height / 2
+                            )
+                        } else {
+                            Log.e("ATU", "下图忽略不点击，因为:${bottomResultModel.toA()}")
+                        }
+                    }
+                }
+                else->{
+                    if(null == getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)){
+                        val bottomScreenBitmap = Bitmap.createBitmap(
+                            screenBitmap,
+                            0,
+                            screenBitmap.height / 2,
+                            screenBitmap.width,
+                            screenBitmap.height / 2
+                        )
+                        getResultRect(
+                            bottomScreenBitmap,
+                            buttonMat,
+                            screenBitmapHeight = screenBitmap.height / 2
+                        )
+                    }
                 }
             }
+
             Thread.sleep(2000)
             //刷新按钮
             val buttonRefreshImageFile = File(ImageConfigureHelper.getButtonRefreshPicturePath())
@@ -122,7 +144,7 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
-    fun getResultRect(areaBitmap: Bitmap, buttonMat: Mat, screenBitmapHeight: Int) {
+    fun getResultRect(areaBitmap: Bitmap, buttonMat: Mat, screenBitmapHeight: Int) : android.graphics.Rect? {
         val target = Mat(areaBitmap.height, areaBitmap.width, CvType.CV_32FC1)//todo 截取高度一半
         Utils.bitmapToMat(areaBitmap, target)
         //
@@ -137,5 +159,6 @@ class MyAccessibilityService : AccessibilityService() {
             Log.e("ATU", "不为空 点击坐标为x=" + rect.exactCenterX() + "====y=" + rect.exactCenterY())
             click(rect.exactCenterX(), screenBitmapHeight + rect.exactCenterY(), 10)
         }
+        return rect;
     }
 }
