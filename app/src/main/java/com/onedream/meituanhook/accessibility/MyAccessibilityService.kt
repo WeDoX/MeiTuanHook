@@ -10,6 +10,8 @@ import com.onedream.meituanhook.image.CaptureScreenService
 import com.onedream.meituanhook.image.ImageConfigureHelper
 import com.onedream.meituanhook.image.ImageOpenCVHelper
 import com.onedream.meituanhook.ocr.OCRAPI
+import com.onedream.meituanhook.ocr.OCRResultModel
+import com.onedream.meituanhook.ocr.toA
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
@@ -34,7 +36,7 @@ class MyAccessibilityService : AccessibilityService() {
         thread {
             Thread.sleep(5000)
             //
-           while (true){
+            while (true) {
                 //click(622f, 406f)
                 //swipe(200f, 0f, 200f, 2000f, 600)
                 manualCaptureScreenAndClick()
@@ -43,56 +45,83 @@ class MyAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun manualCaptureScreenAndClick(){
-        if(null != ClickPointHelper.testClickRect){
-            Log.e("ATU","不为空")
-            click(ClickPointHelper.testClickRect!!.exactCenterX(), ClickPointHelper.testClickRect!!.exactCenterY(), 10)
+    private fun manualCaptureScreenAndClick() {
+        if (null != ClickPointHelper.testClickRect) {
+            Log.e("ATU", "不为空")
+            click(
+                ClickPointHelper.testClickRect!!.exactCenterX(),
+                ClickPointHelper.testClickRect!!.exactCenterY(),
+                10
+            )
         }
         Thread.sleep(2000)
     }
 
 
-    private fun autoCaptureScreenAndClick(){
-        if(null != ClickPointHelper.testClickRect){
+    private fun autoCaptureScreenAndClick() {
+        if (null != ClickPointHelper.testClickRect) {
             return
         }
         CaptureScreenService.start(this)
         Thread.sleep(2000)
-        val buttonImage =  ImageConfigureHelper.getButtonPicturePath()
+        val buttonImage = ImageConfigureHelper.getButtonPicturePath()
         val currentScreenImage = ImageConfigureHelper.getCurrentScreenPicturePath()
         //
         val buttonImageFile = File(buttonImage)
         val currentScreenImageFile = File(currentScreenImage)
         if (buttonImageFile.exists() && currentScreenImageFile.exists()) {
             //小图
-            val buttonBitmap  = BitmapFactory.decodeStream(buttonImageFile.inputStream())
+            val buttonBitmap = BitmapFactory.decodeStream(buttonImageFile.inputStream())
             val buttonMat = Mat(buttonBitmap.height, buttonBitmap.width, CvType.CV_32FC1)
             Utils.bitmapToMat(buttonBitmap, buttonMat)
             //
             val screenBitmap = BitmapFactory.decodeStream(currentScreenImageFile.inputStream())
             //
-            val topScreenBitmap = Bitmap.createBitmap(screenBitmap, 0,0,screenBitmap.width,screenBitmap.height/2)
-            OCRAPI.run_model(topScreenBitmap, error = {
-                Log.e("ATU","上图==》OCR识别错误，原因为:${it}")
-            },success = {
-                Log.e("ATU","上图==》OCR识别成功，结果为：${it}")
-                if(it.price < 10 || it.time > 60){
-                    val bottomScreenBitmap = Bitmap.createBitmap(screenBitmap, 0,screenBitmap.height/2,screenBitmap.width,screenBitmap.height/2)
-                    OCRAPI.run_model(bottomScreenBitmap, error = {
-                        Log.e("ATU","下图==》OCR识别错误，原因为:${it}")
-                    },success = {
-                        Log.e("ATU","下图==》OCR识别成功，结果为：${it}")
-                        getResultRect(bottomScreenBitmap, buttonMat, screenBitmapHeight = screenBitmap.height/2)
-                    })
-                }else{
-                    getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
+            val topScreenBitmap = Bitmap.createBitmap(
+                screenBitmap,
+                0,
+                0,
+                screenBitmap.width,
+                screenBitmap.height / 2
+            )
+            val topResultModel = OCRAPI.runModel(topScreenBitmap)
+            Log.e("ATU", "上图识别结果:${topResultModel.toA()}")
+            if (topResultModel is OCRResultModel.Success && topResultModel.data.price >= 10 && topResultModel.data.time <= 60) {
+                getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
+            } else {
+                Log.e("ATU", "上图忽略不点击，因为:${topResultModel.toA()}")
+                val bottomScreenBitmap = Bitmap.createBitmap(
+                    screenBitmap,
+                    0,
+                    screenBitmap.height / 2,
+                    screenBitmap.width,
+                    screenBitmap.height / 2
+                )
+                val bottomResultModel = OCRAPI.runModel(bottomScreenBitmap)
+                Log.e("ATU", "下图识别结果:${bottomResultModel.toA()}")
+                if (bottomResultModel is OCRResultModel.Success && bottomResultModel.data.price >= 10 && bottomResultModel.data.time <= 60) {
+                    getResultRect(
+                        bottomScreenBitmap,
+                        buttonMat,
+                        screenBitmapHeight = screenBitmap.height / 2
+                    )
+                } else {
+                    Log.e("ATU", "下图忽略不点击，因为:${bottomResultModel.toA()}")
                 }
-            })
+            }
+            Thread.sleep(2000)
+            //刷新按钮
+            val buttonRefreshImageFile = File(ImageConfigureHelper.getButtonRefreshPicturePath())
+            if (buttonRefreshImageFile.exists() && currentScreenImageFile.exists()) {
+                val buttonRefreshBitmap = BitmapFactory.decodeStream(buttonRefreshImageFile.inputStream())
+                val buttonRefreshMat = Mat(buttonRefreshBitmap.height, buttonRefreshBitmap.width, CvType.CV_32FC1)
+                Utils.bitmapToMat(buttonRefreshBitmap, buttonRefreshMat)
+                getResultRect(screenBitmap,buttonRefreshMat, 0)
+            }
         }
-        Thread.sleep(2000)
     }
 
-    fun getResultRect(areaBitmap: Bitmap, buttonMat :Mat, screenBitmapHeight : Int){
+    fun getResultRect(areaBitmap: Bitmap, buttonMat: Mat, screenBitmapHeight: Int) {
         val target = Mat(areaBitmap.height, areaBitmap.width, CvType.CV_32FC1)//todo 截取高度一半
         Utils.bitmapToMat(areaBitmap, target)
         //
@@ -103,9 +132,9 @@ class MyAccessibilityService : AccessibilityService() {
             0.8f,
             resultPicturePath
         )
-        if(null != rect){
-            Log.e("ATU","不为空 点击坐标为x="+ rect.exactCenterX()+"====y="+rect.exactCenterY())
-            click(rect.exactCenterX(),screenBitmapHeight + rect.exactCenterY(), 10)
+        if (null != rect) {
+            Log.e("ATU", "不为空 点击坐标为x=" + rect.exactCenterX() + "====y=" + rect.exactCenterY())
+            click(rect.exactCenterX(), screenBitmapHeight + rect.exactCenterY(), 10)
         }
     }
 }

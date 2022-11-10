@@ -29,7 +29,7 @@ class MeiTuanListActivity : AppCompatActivity() {
             tv_1_money.text = "¥${money}"
             tv_1_time.text="${time}分钟内"
             btn_1_buy.setOnClickListener {
-                Toast.makeText(this@MeiTuanListActivity, "top  ¥${money} ${time}分钟内", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MeiTuanListActivity, "top  ${time}分钟内 ¥${money} ", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -38,7 +38,7 @@ class MeiTuanListActivity : AppCompatActivity() {
             tv_2_money.text = "¥${money}"
             tv_2_time.text="${time}分钟内"
             btn_2_buy.setOnClickListener {
-                Toast.makeText(this@MeiTuanListActivity, "bottom  ¥${money} ${time}分钟内", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MeiTuanListActivity, "bottom  ${time}分钟内  ¥${money} ", Toast.LENGTH_SHORT).show()
             }
         }
     }

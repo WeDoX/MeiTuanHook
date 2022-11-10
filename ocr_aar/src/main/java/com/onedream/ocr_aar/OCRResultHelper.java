@@ -18,7 +18,7 @@ public class OCRResultHelper {
                 processResult += result.substring(index - 2, index);
                 processResult += "分钟内";
                 processResult += "=====》";
-                qcrMeiTuanItemModel.setTime(Integer.parseInt(result.substring(index - 2, index)));
+                qcrMeiTuanItemModel.setTime(Integer.parseInt(result.substring(index - 2, index).replace(" ","")));
             }
             int priceIndex = result.indexOf("￥");
             if (priceIndex < 0) {
@@ -28,7 +28,7 @@ public class OCRResultHelper {
                 int dotIndex = result.indexOf(",", priceIndex);
                 processResult += result.substring(priceIndex + 1, dotIndex);
                 processResult += "元";
-                qcrMeiTuanItemModel.setPrice(Double.parseDouble(result.substring(priceIndex + 1, dotIndex)));
+                qcrMeiTuanItemModel.setPrice(Double.parseDouble(result.substring(priceIndex + 1, dotIndex).replace(" ","")));
             }
         } catch (Exception e) {
             e.printStackTrace();

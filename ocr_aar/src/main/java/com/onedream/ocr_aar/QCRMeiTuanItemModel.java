@@ -19,4 +19,12 @@ public class QCRMeiTuanItemModel {
     public void setPrice(double price) {
         this.price = price;
     }
+
+    @Override
+    public String toString() {
+        return "QCRMeiTuanItemModel{" +
+                "time=" + time +
+                ", price=" + price +
+                '}';
+    }
 }

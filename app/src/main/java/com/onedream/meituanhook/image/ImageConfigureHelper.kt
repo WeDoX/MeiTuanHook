@@ -17,6 +17,12 @@ object ImageConfigureHelper {
         return buttonPicturePath
     }
 
+    fun getButtonRefreshPicturePath(): String {
+        val buttonPicturePath = Environment.getExternalStorageDirectory().path + "/Pictures/refresh.jpg"
+        Log.e("ATU", "指定的按钮图片路径为$buttonPicturePath")
+        return buttonPicturePath
+    }
+
     fun getCurrentScreenPicturePath(): String {
         val currentScreenPicturePath = HookApp.mBaseContext.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)!!.path + "/current_screen.png"
         Log.e("ATU", "指定的当前屏幕图片路径为$currentScreenPicturePath")

@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import com.onedream.meituanhook.R
 import com.onedream.ocr_aar.OCRResultHelper
 import com.onedream.ocr_aar.Predictor
-import com.onedream.ocr_aar.QCRMeiTuanItemModel
 
 object OCRAPI {
 
@@ -27,21 +26,16 @@ object OCRAPI {
         )
     }
 
-    fun run_model(image: Bitmap, error: (String) -> Unit, success: (QCRMeiTuanItemModel) -> Unit) {
+    fun runModel(image: Bitmap): OCRResultModel<Any> {
         if (!predictor.isLoaded()) {
-            error.invoke("STATUS: model is not loaded")
-            return
+            return OCRResultModel.Error("STATUS: model is not loaded")
         }
         predictor.setInputImage(image)
         //
-        Thread {
-            // Run model if model is loaded
-            if (predictor.isLoaded() && predictor.runModel(1, 0, 1)) {
-                success.invoke(OCRResultHelper.processResult(predictor.outputResult()))
-            } else {
-                error.invoke("Run model failed!")
-
-            }
-        }.start()
+        return if (predictor.isLoaded() && predictor.runModel(1, 0, 1)) {
+            OCRResultModel.Success(OCRResultHelper.processResult(predictor.outputResult()))
+        } else {
+            OCRResultModel.Error("Run model failed!")
+        }
     }
 }
