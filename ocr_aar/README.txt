@@ -1,0 +1,1 @@
+从PaddleOCR-2.6.0\deploy\android_demo抽离出来的

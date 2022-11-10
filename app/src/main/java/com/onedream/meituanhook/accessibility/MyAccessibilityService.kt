@@ -1,6 +1,7 @@
 package com.onedream.meituanhook.accessibility
 
 import android.accessibilityservice.AccessibilityService
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -8,6 +9,7 @@ import com.onedream.meituanhook.ClickPointHelper
 import com.onedream.meituanhook.image.CaptureScreenService
 import com.onedream.meituanhook.image.ImageConfigureHelper
 import com.onedream.meituanhook.image.ImageOpenCVHelper
+import com.onedream.meituanhook.ocr.OCRAPI
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
@@ -64,25 +66,46 @@ class MyAccessibilityService : AccessibilityService() {
         if (buttonImageFile.exists() && currentScreenImageFile.exists()) {
             //小图
             val buttonBitmap  = BitmapFactory.decodeStream(buttonImageFile.inputStream())
-            val source = Mat(buttonBitmap.height, buttonBitmap.width, CvType.CV_32FC1)
-            Utils.bitmapToMat(buttonBitmap, source)
+            val buttonMat = Mat(buttonBitmap.height, buttonBitmap.width, CvType.CV_32FC1)
+            Utils.bitmapToMat(buttonBitmap, buttonMat)
             //
             val screenBitmap = BitmapFactory.decodeStream(currentScreenImageFile.inputStream())
-            val target = Mat(screenBitmap.height, screenBitmap.width, CvType.CV_32FC1)
-            Utils.bitmapToMat(screenBitmap, target)
             //
-            val resultPicturePath = ImageConfigureHelper.getResultPicturePath()
-            val rect = ImageOpenCVHelper.singleMatching(
-                source,
-                target,
-                0.8f,
-                resultPicturePath
-            )
-            if(null != rect){
-                Log.e("ATU","不为空 点击坐标为x="+ rect.exactCenterX()+"====y="+rect.exactCenterY())
-                click(rect.exactCenterX(),rect.exactCenterY(), 10)
-            }
+            val topScreenBitmap = Bitmap.createBitmap(screenBitmap, 0,0,screenBitmap.width,screenBitmap.height/2)
+            OCRAPI.run_model(topScreenBitmap, error = {
+                Log.e("ATU","上图==》OCR识别错误，原因为:${it}")
+            },success = {
+                Log.e("ATU","上图==》OCR识别成功，结果为：${it}")
+                if(it.price < 10 || it.time > 60){
+                    val bottomScreenBitmap = Bitmap.createBitmap(screenBitmap, 0,screenBitmap.height/2,screenBitmap.width,screenBitmap.height/2)
+                    OCRAPI.run_model(bottomScreenBitmap, error = {
+                        Log.e("ATU","下图==》OCR识别错误，原因为:${it}")
+                    },success = {
+                        Log.e("ATU","下图==》OCR识别成功，结果为：${it}")
+                        getResultRect(bottomScreenBitmap, buttonMat, screenBitmapHeight = screenBitmap.height/2)
+                    })
+                }else{
+                    getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
+                }
+            })
         }
         Thread.sleep(2000)
+    }
+
+    fun getResultRect(areaBitmap: Bitmap, buttonMat :Mat, screenBitmapHeight : Int){
+        val target = Mat(areaBitmap.height, areaBitmap.width, CvType.CV_32FC1)//todo 截取高度一半
+        Utils.bitmapToMat(areaBitmap, target)
+        //
+        val resultPicturePath = ImageConfigureHelper.getResultPicturePath()
+        val rect = ImageOpenCVHelper.singleMatching(
+            buttonMat,
+            target,
+            0.8f,
+            resultPicturePath
+        )
+        if(null != rect){
+            Log.e("ATU","不为空 点击坐标为x="+ rect.exactCenterX()+"====y="+rect.exactCenterY())
+            click(rect.exactCenterX(),screenBitmapHeight + rect.exactCenterY(), 10)
+        }
     }
 }

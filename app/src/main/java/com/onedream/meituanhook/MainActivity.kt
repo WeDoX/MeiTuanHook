@@ -13,11 +13,10 @@ import com.onedream.meituanhook.accessibility.jumpToAccessibilitySetting
 import com.onedream.meituanhook.image.CaptureScreenService
 import com.onedream.meituanhook.image.ImageConfigureHelper
 import com.onedream.meituanhook.image.ImageOpenCVHelper
+import com.onedream.meituanhook.ocr.OCRAPI
 import com.onedream.meituanhook.permission.PermissionHelper
 import com.onedream.meituanhook.shared_preferences.ScreenLocalStorage
 import com.onedream.meituanhook.system.ScreenHelper
-import com.onedream.ocr_aar.OCRResultHelper
-import com.onedream.ocr_aar.Predictor
 import kotlinx.android.synthetic.main.activity_main.*
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
@@ -107,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         //
         Thread {
             // Load model and reload test image
-            if (onLoadModel()) {
+            if (OCRAPI.onLoadModel(this@MainActivity)) {
                 runOnUiThread { // Load test image from path and run model
                     Toast.makeText(
                         this@MainActivity,
@@ -126,69 +125,10 @@ class MainActivity : AppCompatActivity() {
             }
         }.start()
     }
-    protected var predictor = Predictor()
 
-    fun onLoadModel(): Boolean {
-        if (predictor.isLoaded()) {
-            predictor.releaseModel()
-        }
-        return predictor.init(
-            this@MainActivity,
-            getString(R.string.MODEL_PATH_DEFAULT),
-            getString(R.string.LABEL_PATH_DEFAULT),
-            0,
-            getString(R.string.CPU_THREAD_NUM_DEFAULT).toInt(),
-            getString(R.string.CPU_POWER_MODE_DEFAULT),
-            getString(R.string.DET_LONG_SIZE_DEFAULT).toInt(),
-            getString(R.string.SCORE_THRESHOLD_DEFAULT).toFloat()
-        )
-    }
 
-    fun btn_run_model_click() {
-        var image: Bitmap? = null
-        image = try {
-            val `in` = assets.open(getString(R.string.IMAGE_PATH_DEFAULT))
-            BitmapFactory.decodeStream(`in`)
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-            Toast.makeText(this@MainActivity, "STATUS: image is not exists!$e", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-        if (image == null) {
-            Toast.makeText(this@MainActivity, "STATUS: image is not exists!", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-        if (!predictor.isLoaded()) {
-            Toast.makeText(this@MainActivity, "STATUS: model is not loaded", Toast.LENGTH_SHORT)
-                .show()
-            return
-        }
-        predictor.setInputImage(image)
-        //
-        Thread {
-            // Run model if model is loaded
-            if (predictor.isLoaded() && predictor.runModel(1, 0, 1)) {
-                runOnUiThread {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "STATUS: run model successed"+OCRResultHelper.processResult(predictor.outputResult()),
-                        Toast.LENGTH_SHORT
-                    ).show()
 
-                }
-            } else {
-                runOnUiThread {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Run model failed!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }.start()
-    }
+
 
 
     private fun showScreenHeight() {

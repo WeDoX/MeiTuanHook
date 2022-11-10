@@ -1,3 +1,4 @@
+include ':meituan'
 include ':app'
 include ':ocr_aar'
 include ':openCVLibrary343'
