@@ -9,4 +9,6 @@ package com.onedream.meituanhook.shared_preferences.base;
 public class LocalStorageConstant {
     //屏幕高度校正
     public final static String KEY_SCREEN_HEIGHT = "KEY_SCREEN_HEIGHT";
+    //
+    public final static String KEY_PRICE = "KEY_PRICE";
 }

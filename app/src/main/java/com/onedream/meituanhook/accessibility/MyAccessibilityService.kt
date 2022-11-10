@@ -12,6 +12,7 @@ import com.onedream.meituanhook.image.ImageOpenCVHelper
 import com.onedream.meituanhook.ocr.OCRAPI
 import com.onedream.meituanhook.ocr.OCRResultModel
 import com.onedream.meituanhook.ocr.toA
+import com.onedream.meituanhook.shared_preferences.ScreenLocalStorage
 import org.opencv.android.Utils
 import org.opencv.core.CvType
 import org.opencv.core.Mat
@@ -86,7 +87,7 @@ class MyAccessibilityService : AccessibilityService() {
             )
             val topResultModel = OCRAPI.runModel(topScreenBitmap)
             Log.e("ATU", "上图识别结果:${topResultModel.toA()}")
-            if (topResultModel is OCRResultModel.Success && topResultModel.data.price >= 10 && topResultModel.data.time <= 60) {
+            if (topResultModel is OCRResultModel.Success && topResultModel.data.price >= ScreenLocalStorage.getPrice()) {
                 getResultRect(topScreenBitmap, buttonMat, screenBitmapHeight = 0)
             } else {
                 Log.e("ATU", "上图忽略不点击，因为:${topResultModel.toA()}")
@@ -99,7 +100,7 @@ class MyAccessibilityService : AccessibilityService() {
                 )
                 val bottomResultModel = OCRAPI.runModel(bottomScreenBitmap)
                 Log.e("ATU", "下图识别结果:${bottomResultModel.toA()}")
-                if (bottomResultModel is OCRResultModel.Success && bottomResultModel.data.price >= 10 && bottomResultModel.data.time <= 60) {
+                if (bottomResultModel is OCRResultModel.Success && bottomResultModel.data.price >= ScreenLocalStorage.getPrice()) {
                     getResultRect(
                         bottomScreenBitmap,
                         buttonMat,

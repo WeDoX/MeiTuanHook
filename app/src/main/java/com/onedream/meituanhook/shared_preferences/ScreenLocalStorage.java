@@ -16,4 +16,17 @@ public class ScreenLocalStorage {
     public static void setScreenHeight(int screenHeight) {
         BaseLocalStorageManager.putInt(LocalStorageConstant.KEY_SCREEN_HEIGHT, screenHeight);
     }
+
+
+    public static double getPrice(){
+        double price = BaseLocalStorageManager.getDouble(LocalStorageConstant.KEY_PRICE, 0.0f);
+        if(price <= 0){
+            price = 1.0;
+        }
+        return price;
+    }
+
+    public static void setPrice(double price){
+       BaseLocalStorageManager.putDouble(LocalStorageConstant.KEY_PRICE, price);
+    }
 }

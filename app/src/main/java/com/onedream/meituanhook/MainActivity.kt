@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         //
         showScreenHeight()
+        showPrice()
         //
         btn_edit.setOnClickListener {
             changeScreenHeightEditText(true)
@@ -61,10 +62,25 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+
+        btn_edit_price.setOnClickListener {
+            changePriceEditText(true)
+        }
+        btn_save_price.setOnClickListener {
+            val editPrice = edit_price.text.toString()
+            if (editPrice.isNullOrEmpty()) {
+                return@setOnClickListener
+            }
+            try {
+                ScreenLocalStorage.setPrice(editPrice.toDouble())
+                showPrice()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
         //
         btn_jump_to_settings.setOnClickListener {
             start()
-//            btn_run_model_click()
         }
 
 
@@ -105,30 +121,16 @@ class MainActivity : AppCompatActivity() {
 
         //
         Thread {
-            // Load model and reload test image
-            if (OCRAPI.onLoadModel(this@MainActivity)) {
-                runOnUiThread { // Load test image from path and run model
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Load model successed",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                runOnUiThread {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Load model failed!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+            val initBoolean = OCRAPI.onLoadModel(this@MainActivity)
+            runOnUiThread { // Load test image from path and run model
+                Toast.makeText(
+                    this@MainActivity,
+                    if (initBoolean) "Load model successed" else "Load model failed!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }.start()
     }
-
-
-
-
 
 
     private fun showScreenHeight() {
@@ -143,6 +145,17 @@ class MainActivity : AppCompatActivity() {
         edit_abc.isEnabled = isEnabled
         btn_edit.visibility = if (isEnabled) View.GONE else View.VISIBLE
         btn_save.visibility = if (isEnabled) View.VISIBLE else View.GONE
+    }
+
+    private fun showPrice() {
+        edit_price.setText(ScreenLocalStorage.getPrice().toString())
+        changePriceEditText(false)
+    }
+
+    private fun changePriceEditText(isEnabled: Boolean) {
+        edit_price.isEnabled = isEnabled
+        btn_edit_price.visibility = if (isEnabled) View.GONE else View.VISIBLE
+        btn_save_price.visibility = if (isEnabled) View.VISIBLE else View.GONE
     }
 
     private fun start() {
