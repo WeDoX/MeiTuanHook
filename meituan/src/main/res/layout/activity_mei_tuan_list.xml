@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:background="#FFDE5F0F"
+            android:background="@drawable/button"
             android:text="购买"
             android:textColor="#FFFFFFFF" />
     </LinearLayout>
@@ -83,7 +83,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_margin="10dp"
-            android:background="#FFDE5F0F"
+            android:background="@drawable/button"
             android:text="购买"
             android:textColor="#FFFFFFFF" />
     </LinearLayout>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_color_btn_main">#FFDE5F0F</color>
+    <color name="app_color_btn_main_pressed">#FF5E6BCE</color>
+    <color name="app_color_btn_main_disable">#66DE5F0F</color>
+</resources>
