@@ -1,3 +1,4 @@
 include ':app'
+include ':ocr_aar'
 include ':openCVLibrary343'
 rootProject.name = "MeiTuanHook"

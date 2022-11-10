@@ -5,8 +5,8 @@
 5    android:versionName="3.4.3" > <!-- <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="21" /> -->
 6    <uses-sdk
 7        android:minSdkVersion="8"
-7-->D:\ATU\AndroidWorkSpace\MeiTuanHook\openCVLibrary343\src\main\AndroidManifest.xml
+7-->D:\MeiTuanHook\openCVLibrary343\src\main\AndroidManifest.xml
 8        android:targetSdkVersion="21" />
-8-->D:\ATU\AndroidWorkSpace\MeiTuanHook\openCVLibrary343\src\main\AndroidManifest.xml
+8-->D:\MeiTuanHook\openCVLibrary343\src\main\AndroidManifest.xml
 9
 10</manifest>
